@@ -45,13 +45,34 @@ class LocalDatabase {
     }
 
     // Métodos CRUD
-    findOne(collection, query) {... }
-    find(collection, query) {... }
-    insert(collection, document) {... }
-    update(collection, query, update) {... }
+    findOne(collection, query) {
+        return this.find(collection, query)[0];
+    }
+    find(collection, query) {
+        return this.collections[collection].filter((item) => {
+            for (const key in query) {
+                if (query[key] !== item[key]) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+    insert(collection, document) {
+        this.collections[collection].push(document);
+    }
+    update(collection, query, update) {
+        const items = this.find(collection, query);
+        items.forEach((item) => {
+            Object.assign(item, update);
+        });
+    }
 
     // Guardar en disco
-    saveCollection(name) {... }
+    saveCollection(name) {
+        const filePath = this.path.join(this.dataDir, `${name}.json`);
+        this.fs.writeFileSync(filePath, JSON.stringify(this.collections[name]));
+    }
 }
 
 module.exports = new LocalDatabase();
